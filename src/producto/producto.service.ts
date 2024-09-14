@@ -6,6 +6,7 @@ import {
 } from '../shared/errors/business-errors';
 import { Repository } from 'typeorm';
 import { ProductoEntity } from './producto.entity';
+import { TipoProducto } from '../shared/enums/tipo-producto';
 
 @Injectable()
 export class ProductoService {
@@ -34,6 +35,7 @@ export class ProductoService {
   }
 
   async create(producto: ProductoEntity): Promise<ProductoEntity> {
+    await this.validarTipoProducto(producto.tipo);
     return await this.productoRepository.save(producto);
   }
 
@@ -45,7 +47,7 @@ export class ProductoService {
         'No se encuentra ningún producto con este id',
         BusinessError.NOT_FOUND,
       );
-    producto.id = id;
+    await this.validarTipoProducto(producto.tipo);
     return await this.productoRepository.save(producto);
   }
 
@@ -59,5 +61,13 @@ export class ProductoService {
         BusinessError.NOT_FOUND,
       );
     await this.productoRepository.remove(producto);
+  }
+
+  private async validarTipoProducto(tipo: string) {
+    if (!Object.values(TipoProducto).includes(tipo as TipoProducto))
+      throw new BusinessLogicException(
+        'Tipo de producto no permitido',
+        BusinessError.BAD_REQUEST,
+      );
   }
 }

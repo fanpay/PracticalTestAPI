@@ -34,6 +34,7 @@ export class TiendaService {
   }
 
   async create(tienda: TiendaEntity): Promise<TiendaEntity> {
+    await this.validarCiudad(tienda.ciudad);
     return await this.tiendaRepository.save(tienda);
   }
 
@@ -45,7 +46,7 @@ export class TiendaService {
         'No se encuentra ninguna tienda con este id',
         BusinessError.NOT_FOUND,
       );
-    tienda.id = id;
+    await this.validarCiudad(tienda.ciudad);
     return await this.tiendaRepository.save(tienda);
   }
 
@@ -59,5 +60,13 @@ export class TiendaService {
         BusinessError.NOT_FOUND,
       );
     await this.tiendaRepository.remove(tienda);
+  }
+
+  private async validarCiudad(ciudad: string) {
+    if (!/^[A-Z]{3}$/.test(ciudad))
+      throw new BusinessLogicException(
+        'Ciudad no válida',
+        BusinessError.BAD_REQUEST,
+      );
   }
 }

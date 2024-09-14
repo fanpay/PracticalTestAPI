@@ -7,6 +7,7 @@ import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-co
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { faker } from '@faker-js/faker';
+import { TipoProducto } from '../shared/enums/tipo-producto';
 
 describe('ProductoTiendaService', () => {
 
@@ -53,7 +54,7 @@ describe('ProductoTiendaService', () => {
     expect(service).toBeDefined();
   });
 
-  it('addTiendaToProducto should add a tienda to a producto', async () => {
+  it('addStoreToProduct should add a tienda to a producto', async () => {
     const newTienda: TiendaEntity = await tiendaRepository.save({
       nombre: faker.lorem.sentence(),
       ciudad: 'BTA',
@@ -62,11 +63,11 @@ describe('ProductoTiendaService', () => {
  
     const newProducto: ProductoEntity = await productoRepository.save({
       nombre: faker.lorem.sentence(),
-      tipo: 'Perecedero',
+      tipo: TipoProducto.PERECEDERO,
       precio: faker.lorem.sentence()
     })
  
-    const result: ProductoEntity = await service.addTiendaToProducto(newProducto.id, newTienda.id);
+    const result: ProductoEntity = await service.addStoreToProduct(newProducto.id, newTienda.id);
    
     expect(result.tiendas.length).toBe(1);
     expect(result.tiendas[0]).not.toBeNull();
@@ -75,27 +76,27 @@ describe('ProductoTiendaService', () => {
     expect(result.tiendas[0].direccion).toBe(newTienda.direccion)
   });
 
-  it('addTiendaToProducto should thrown exception for an invalid tienda', async () => {
+  it('addStoreToProduct should thrown exception for an invalid tienda', async () => {
     const newProducto: ProductoEntity = await productoRepository.save({
       nombre: faker.lorem.sentence(),
-      tipo: 'Perecedero',
+      tipo: TipoProducto.PERECEDERO,
       precio: faker.lorem.sentence()
     })
  
-    await expect(() => service.addTiendaToProducto(newProducto.id, '0')).rejects.toHaveProperty('message', 'No se encuentra ninguna tienda con ese id');
+    await expect(() => service.addStoreToProduct(newProducto.id, '0')).rejects.toHaveProperty('message', 'No se encuentra ninguna tienda con ese id');
   });
 
-  it('addTiendaToProducto should throw an exception for an invalid producto', async () => {
+  it('addStoreToProduct should throw an exception for an invalid producto', async () => {
     const newTienda: TiendaEntity = await tiendaRepository.save({
       nombre: faker.lorem.sentence(),
       ciudad: 'BTA',
       direccion: faker.lorem.sentence()
     });
  
-    await expect(() => service.addTiendaToProducto('0', newTienda.id)).rejects.toHaveProperty('message', 'No se encuentra ningún producto con ese id');
+    await expect(() => service.addStoreToProduct('0', newTienda.id)).rejects.toHaveProperty('message', 'No se encuentra ningún producto con ese id');
   });
 
-  it('findTiendaFromProducto should return tienda from producto', async () => {
+  it('findStoresFromProduct should return tienda from producto', async () => {
     const newTienda: TiendaEntity = await tiendaRepository.save({
       nombre: faker.lorem.sentence(),
       ciudad: 'BTA',
@@ -104,38 +105,38 @@ describe('ProductoTiendaService', () => {
  
     const newProducto: ProductoEntity = await productoRepository.save({
       nombre: faker.lorem.sentence(),
-      tipo: 'Perecedero',
+      tipo: TipoProducto.PERECEDERO,
       precio: faker.lorem.sentence()
     })
  
-    const result: ProductoEntity = await service.addTiendaToProducto(newProducto.id, newTienda.id);
-    const storedTienda: TiendaEntity = await service.findTiendaFromProducto(newProducto.id, newTienda.id,)
+    const result: ProductoEntity = await service.addStoreToProduct(newProducto.id, newTienda.id);
+    const storedTienda: TiendaEntity = await service.findStoreFromProduct(newProducto.id, newTienda.id,)
     expect(storedTienda).not.toBeNull();
     expect(storedTienda.nombre).toBe(result.tiendas[0].nombre);
     expect(storedTienda.ciudad).toBe(result.tiendas[0].ciudad);
     expect(storedTienda.direccion).toBe(result.tiendas[0].direccion);
   });
 
-  it('findTiendaFromProducto should throw an exception for an invalid tienda', async () => {
-    await expect(()=> service.findTiendaFromProducto(producto.id, "0")).rejects.toHaveProperty('message', 'No se encuentra ninguna tienda con ese id');
+  it('findStoresFromProduct should throw an exception for an invalid tienda', async () => {
+    await expect(()=> service.findStoreFromProduct(producto.id, "0")).rejects.toHaveProperty('message', 'No se encuentra ninguna tienda con ese id');
   });
 
-  it('findTiendaFromProducto should throw an exception for an invalid producto', async () => {
+  it('findStoresFromProduct should throw an exception for an invalid producto', async () => {
     const tienda: TiendaEntity = tiendasList[0];
-    await expect(()=> service.findTiendaFromProducto("0", tienda.id)).rejects.toHaveProperty('message', 'No se encuentra ningún producto con ese id');
+    await expect(()=> service.findStoreFromProduct("0", tienda.id)).rejects.toHaveProperty('message', 'No se encuentra ningún producto con ese id');
   });
 
-  it('findTiendaFromProducto should throw an exception for an tienda not associated to the producto', async () => {
+  it('findStoresFromProduct should throw an exception for an tienda not associated to the producto', async () => {
     const newTienda: TiendaEntity = await tiendaRepository.save({
       nombre: faker.lorem.sentence(),
       ciudad: 'BTA',
       direccion: faker.lorem.sentence()
     });
  
-    await expect(()=> service.findTiendaFromProducto(producto.id, newTienda.id)).rejects.toHaveProperty('message', 'La tienda con el id indicado no está asociada al producto con el id indicado');
+    await expect(()=> service.findStoreFromProduct(producto.id, newTienda.id)).rejects.toHaveProperty('message', 'La tienda con el id indicado no está asociada al producto con el id indicado');
   });
 
-  it('findTiendasFromProducto should return tiendas from producto', async ()=>{
+  it('findStoresFromProduct should return tiendas from producto', async ()=>{
     
     const newTienda: TiendaEntity = await tiendaRepository.save({
       nombre: faker.lorem.sentence(),
@@ -145,27 +146,27 @@ describe('ProductoTiendaService', () => {
  
     const newProducto: ProductoEntity = await productoRepository.save({
       nombre: faker.lorem.sentence(),
-      tipo: 'Perecedero',
+      tipo: TipoProducto.PERECEDERO,
       precio: faker.lorem.sentence()
     })
  
-    await service.addTiendaToProducto(newProducto.id, newTienda.id);
-    const tiendas: TiendaEntity[] = await service.findTiendasFromProducto(newProducto.id);
+    await service.addStoreToProduct(newProducto.id, newTienda.id);
+    const tiendas: TiendaEntity[] = await service.findStoresFromProduct(newProducto.id);
     expect(tiendas.length).toBe(1)
   });
 
-  it('findTiendasFromProducto should throw an exception for an invalid producto', async () => {
-    await expect(()=> service.findTiendasFromProducto("0")).rejects.toHaveProperty('message', 'No se encuentra ningún producto con ese id');
+  it('findStoresFromProduct should throw an exception for an invalid producto', async () => {
+    await expect(()=> service.findStoresFromProduct("0")).rejects.toHaveProperty('message', 'No se encuentra ningún producto con ese id');
   });
 
-  it('updateTiendasFromProducto should update tiendas list for a producto', async () => {
+  it('updateStoresFromProduct should update tiendas list for a producto', async () => {
     const newTienda: TiendaEntity = await tiendaRepository.save({
       nombre: faker.lorem.sentence(),
       ciudad: 'BTA',
       direccion: faker.lorem.sentence()
     });
  
-    const updatedProducto: ProductoEntity = await service.updateTiendasFromProducto(producto.id, [newTienda]);
+    const updatedProducto: ProductoEntity = await service.updateStoresFromProduct(producto.id, [newTienda]);
     expect(updatedProducto.tiendas.length).toBe(1);
  
     expect(updatedProducto.tiendas[0].nombre).toBe(newTienda.nombre);
@@ -173,24 +174,24 @@ describe('ProductoTiendaService', () => {
     expect(updatedProducto.tiendas[0].direccion).toBe(newTienda.direccion);
   });
 
-  it('updateTiendasFromProducto should throw an exception for an invalid producto', async () => {
+  it('updateStoresFromProduct should throw an exception for an invalid producto', async () => {
     const newTienda: TiendaEntity = await tiendaRepository.save({
       nombre: faker.lorem.sentence(),
       ciudad: 'BTA',
       direccion: faker.lorem.sentence()
     });
  
-    await expect(()=> service.updateTiendasFromProducto("0", [newTienda])).rejects.toHaveProperty('message', 'No se encuentra ningún producto con ese id');
+    await expect(()=> service.updateStoresFromProduct("0", [newTienda])).rejects.toHaveProperty('message', 'No se encuentra ningún producto con ese id');
   });
 
-  it('updateTiendasFromProducto should throw an exception for an invalid tienda', async () => {
+  it('updateStoresFromProduct should throw an exception for an invalid tienda', async () => {
     const nuevaTienda: TiendaEntity = tiendasList[0];
     nuevaTienda.id = "0";
  
-    await expect(()=> service.updateTiendasFromProducto(producto.id, [nuevaTienda])).rejects.toHaveProperty('message', 'No se encuentra ninguna tienda con ese id');
+    await expect(()=> service.updateStoresFromProduct(producto.id, [nuevaTienda])).rejects.toHaveProperty('message', 'No se encuentra ninguna tienda con ese id');
   });
 
-  it('deleteTiendaFromProducto should remove a tienda from a producto', async () => {
+  it('deleteStoreFromProduct should remove a tienda from a producto', async () => {
     
     const newTienda: TiendaEntity = await tiendaRepository.save({
       nombre: faker.lorem.sentence(),
@@ -200,35 +201,35 @@ describe('ProductoTiendaService', () => {
  
     const newProducto: ProductoEntity = await productoRepository.save({
       nombre: faker.lorem.sentence(),
-      tipo: 'Perecedero',
+      tipo: TipoProducto.PERECEDERO,
       precio: faker.lorem.sentence()
     })
  
-    await service.addTiendaToProducto(newProducto.id, newTienda.id);
+    await service.addStoreToProduct(newProducto.id, newTienda.id);
    
-    await service.deleteTiendaFromProducto(newProducto.id, newTienda.id);
+    await service.deleteStoreFromProduct(newProducto.id, newTienda.id);
  
     const storedProducto: ProductoEntity = await productoRepository.findOne({where: {id: newProducto.id}, relations: ["tiendas"]});
     const deletedTienda: TiendaEntity = storedProducto.tiendas.find(a => a.id === newTienda.id); 
     expect(deletedTienda).toBeUndefined(); 
   });
 
-  it('deleteTiendaFromProducto should thrown an exception for an invalid tienda', async () => {
-    await expect(()=> service.deleteTiendaFromProducto(producto.id, "0")).rejects.toHaveProperty('message', 'No se encuentra ninguna tienda con ese id');
+  it('deleteStoreFromProduct should thrown an exception for an invalid tienda', async () => {
+    await expect(()=> service.deleteStoreFromProduct(producto.id, "0")).rejects.toHaveProperty('message', 'No se encuentra ninguna tienda con ese id');
   });
 
-  it('deleteTiendaToProducto should thrown an exception for an invalid producto', async () => {
+  it('deleteStoreFromProduct should thrown an exception for an invalid producto', async () => {
     const tienda: TiendaEntity = tiendasList[0];
-    await expect(()=> service.deleteTiendaFromProducto("0", tienda.id)).rejects.toHaveProperty('message', 'No se encuentra ningún producto con ese id');
+    await expect(()=> service.deleteStoreFromProduct("0", tienda.id)).rejects.toHaveProperty('message', 'No se encuentra ningún producto con ese id');
   });
 
-  it('deleteTiendaFromProducto should thrown an exception for an non asocciated tienda', async () => {
+  it('deleteStoreFromProduct should thrown an exception for an non asocciated tienda', async () => {
     const newTienda: TiendaEntity = await tiendaRepository.save({
       nombre: faker.lorem.sentence(),
       ciudad: 'BTA',
       direccion: faker.lorem.sentence()
     });
  
-    await expect(()=> service.deleteTiendaFromProducto(producto.id, newTienda.id)).rejects.toHaveProperty('message', 'La tienda con el id indicado no está asociada al producto con el id indicado');
+    await expect(()=> service.deleteStoreFromProduct(producto.id, newTienda.id)).rejects.toHaveProperty('message', 'La tienda con el id indicado no está asociada al producto con el id indicado');
   });
 });

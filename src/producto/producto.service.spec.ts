@@ -6,6 +6,7 @@ import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-co
 import { ProductoEntity } from './producto.entity';
 import { ProductoService } from './producto.service';
 import { faker } from '@faker-js/faker';
+import { TipoProducto } from '../shared/enums/tipo-producto';
 
 let productosList = [];
 
@@ -65,7 +66,7 @@ describe('ProductoService', () => {
     const producto: ProductoEntity = {
       id: '',
       nombre: faker.lorem.sentence(),
-      tipo: faker.lorem.sentence(),
+      tipo: TipoProducto.NO_PERECEDERO,
       precio: faker.lorem.sentence(),
       tiendas: [],
     };
@@ -78,10 +79,25 @@ describe('ProductoService', () => {
     expect(storedProducto.precio).toEqual(newProducto.precio);
   });
 
+  it('create should throw an exception for unsupported tipo', async () => {
+    const producto: ProductoEntity = {
+      id: '',
+      nombre: faker.lorem.sentence(),
+      tipo: faker.lorem.sentence(),
+      precio: faker.lorem.sentence(),
+      tiendas: [],
+    };
+
+    await expect(() => service.create(producto)).rejects.toHaveProperty(
+      'message',
+      'Tipo de producto no permitido',
+    );
+  });
+
   it('update should modify a producto', async () => {
     const producto: ProductoEntity = productosList[0];
     producto.nombre = 'Nuevo nombre';
-    producto.tipo = 'Nuevo tipo';
+    producto.tipo = TipoProducto.NO_PERECEDERO;
     const updateProducto: ProductoEntity = await service.update(producto.id, producto);
     expect(updateProducto).not.toBeNull();
     const storedProducto: ProductoEntity = await repository.findOne({ where: { id: producto.id } })
@@ -97,6 +113,19 @@ describe('ProductoService', () => {
     };
     await expect(() => service.update('0', producto)).rejects.toHaveProperty('message', 'No se encuentra ningún producto con este id')
   }); 
+
+  it('update should throw an exception for unsupported tipo', async () => {
+    let producto: ProductoEntity = productosList[0];
+    producto = {
+      ...producto,
+      nombre: 'New name',
+      precio: '0.0',
+      tipo: faker.lorem.sentence(),
+    };
+    await expect(() =>
+      service.update(producto.id, producto),
+    ).rejects.toHaveProperty('message', 'Tipo de producto no permitido');
+  });
 
   it('delete should remove a producto', async () => {
     const producto: ProductoEntity = productosList[0];

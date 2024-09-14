@@ -64,7 +64,7 @@ describe('MuseumService', () => {
     const tienda: TiendaEntity = {
       id: '',
       nombre: faker.lorem.sentence(),
-      ciudad: faker.lorem.sentence(),
+      ciudad: faker.string.alpha({ length: 3, casing: 'upper' }),
       direccion: faker.lorem.sentence(),
       productos: [],
     };
@@ -77,10 +77,24 @@ describe('MuseumService', () => {
     expect(storedTienda.direccion).toEqual(newTienda.direccion);
   });
 
+  it('create should throw an exception for unsupported ciudad', async () => {
+    const tienda: TiendaEntity = {
+      id: '',
+      nombre: faker.company.name(),
+      ciudad: 'CR2',
+      direccion: faker.location.streetAddress(),
+    } as TiendaEntity;
+
+    await expect(() => service.create(tienda)).rejects.toHaveProperty(
+      'message',
+      'Ciudad no válida',
+    );
+  });
+
   it('update should modify a tienda', async () => {
     const tienda: TiendaEntity = tiendasList[0];
     tienda.nombre = 'Nuevo nombre';
-    tienda.ciudad = 'Nuevo ciudad';
+    tienda.ciudad = 'DAD';
     const updateTienda: TiendaEntity = await service.update(tienda.id, tienda);
     expect(updateTienda).not.toBeNull();
     const storedTienda: TiendaEntity = await repository.findOne({ where: { id: tienda.id } })
@@ -96,6 +110,19 @@ describe('MuseumService', () => {
     };
     await expect(() => service.update("0", tienda)).rejects.toHaveProperty('message', 'No se encuentra ninguna tienda con este id')
   }); 
+
+  it('update should throw an exception for unsupported ciudad', async () => {
+    let tienda: TiendaEntity = tiendasList[0];
+    tienda = {
+      ...tienda,
+      nombre: 'Nueva tienda',
+      ciudad: 'CIUDAD',
+      direccion: 'Nueva dir',
+    };
+    await expect(() =>
+      service.update(tienda.id, tienda),
+    ).rejects.toHaveProperty('message', 'Ciudad no válida');
+  });
 
   it('delete should remove a tienda', async () => {
     const tienda: TiendaEntity = tiendasList[0];
